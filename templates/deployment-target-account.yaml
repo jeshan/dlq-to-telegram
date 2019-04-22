@@ -135,9 +135,9 @@ Resources:
             Resource:
               - !Sub arn:aws:sns:*:${AWS::AccountId}:${DlqName}
           - Action:
-              - sns:ListTopics
+              - sns:ListSubscriptionsByTopic
             Effect: Allow
-            Resource: '*'
+            Resource: !Sub arn:aws:sns:*:${AWS::AccountId}:${DlqName}
         Version: '2012-10-17'
     Type: AWS::IAM::ManagedPolicy
 
