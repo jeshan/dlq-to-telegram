@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'sends SNS (in particular DLQ) messages to Telegram'
+
+Parameters:
+  DlqName:
+    Type: String
+  Role:
+    Type: String
+  TelegramBotToken:
+    Type: String
+    NoEcho: true
+  TelegramChatId:
+    Type: String
+
+Resources:
+  Fn:
+    Type: AWS::Serverless::Function
+    Properties:
+      InlineCode: !Sub |
+        from botocore.vendored import requests
+        import re
+
+        def handler(event, context):
+          print('event', event)
+
+          for record in event.get('Records', []):
+            search = re.search('arn:aws:sns:(.+?):(.+?):.+', record['EventSubscriptionArn'])
+            region = search.group(1)
+            account = search.group(2)
+
+            body = record['Sns']['Message']
+            if 'MessageAttributes' in record['Sns'] and 'ErrorMessage' in record['Sns']['MessageAttributes']:
+              body = record['Sns']['MessageAttributes']['ErrorMessage'].get('Value')
+            message = f'From {account} in {region}:\n{body}'
+            result = requests.post('https://api.telegram.org/bot${TelegramBotToken}/sendMessage', json={'chat_id': ${TelegramChatId}, 'text': message}).json()
+            print('result', result)
+      Handler: index.handler
+      Timeout: 30
+      MemorySize: 128
+      Runtime: python3.7
+      Events:
+        Dlq:
+          Type: SNS
+          Properties:
+            Topic: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${DlqName}
