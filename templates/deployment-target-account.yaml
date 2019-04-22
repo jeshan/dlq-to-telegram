@@ -128,6 +128,12 @@ Resources:
             Effect: Allow
             Resource:
               - !Sub arn:aws:sns:*:${AWS::AccountId}:${StackEventsTopic}
+          - Action:
+              - sns:Subscribe
+              - sns:Unsubscribe
+            Effect: Allow
+            Resource:
+              - !Sub arn:aws:sns:*:${AWS::AccountId}:${DlqName}
         Version: '2012-10-17'
     Type: AWS::IAM::ManagedPolicy
 
