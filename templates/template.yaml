@@ -38,6 +38,7 @@ Resources:
       Handler: index.handler
       Timeout: 30
       MemorySize: 128
+      Role: !Ref Role
       Runtime: python3.7
       Events:
         Dlq:
