@@ -50,7 +50,7 @@ def go(env):
         f.write(f"""project_code: {project_name}
 region: us-east-1
 
-dlq_name: {project_name}
+dlq_name: lambda-default-dlq
 events_topic_name: cloudformation-stack-events
 """)
 
